@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:whatsapp_clone/widgets/contacts_list.dart';
+import 'package:whatsapp_clone/widgets/web_profile_bar.dart';
+import 'package:whatsapp_clone/widgets/web_search_bar.dart';
 
 class WebScreenLayout extends StatelessWidget {
   const WebScreenLayout({super.key});
@@ -14,8 +16,8 @@ class WebScreenLayout extends StatelessWidget {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                //web profile bar
-                //web search bar
+                WebProfileBar(),
+                WebSearchBar(),
                 ContactsList(),
               ],
             ),
