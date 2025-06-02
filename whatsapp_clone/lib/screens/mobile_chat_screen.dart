@@ -4,6 +4,7 @@ import 'package:whatsapp_clone/info.dart';
 import 'package:whatsapp_clone/widgets/chat_list.dart';
 
 class MobileChatScreen extends StatelessWidget {
+  static const String routeName = '/Mobile-Chat';
   const MobileChatScreen({super.key});
 
   @override
