@@ -1,27 +1,64 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:whatsapp_clone/info.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:whatsapp_clone/common/widgets/loader.dart';
+import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
+import 'package:whatsapp_clone/models/message.dart';
 import 'package:whatsapp_clone/widgets/my_message_card.dart';
 import 'package:whatsapp_clone/widgets/sender_message_card.dart';
 
-class ChatList extends StatelessWidget {
-  const ChatList({super.key});
+class ChatList extends ConsumerStatefulWidget {
+  final String receiverUserId;
+  const ChatList({super.key, required this.receiverUserId});
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _ChatListState();
+}
+
+class _ChatListState extends ConsumerState<ChatList> {
+  final ScrollController messageController = ScrollController();
+
+  @override
+  void dispose() {
+    super.dispose();
+    messageController.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        if (messages[index]['isMe'] == true) {
-          //my message
-          return MyMessageCard(
-            message: messages[index]['text'].toString(),
-            date: messages[index]['time'].toString(),
-          );
+    return StreamBuilder<List<Message>>(
+      stream:
+          ref.read(chatControllerProvider).getChatStream(widget.receiverUserId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Loader();
         }
-        //sender message card
-        return SenderMessageCard(
-          message: messages[index]['text'].toString(),
-          date: messages[index]['time'].toString(),
+
+        SchedulerBinding.instance.addPersistentFrameCallback((_) {
+          messageController.jumpTo(messageController.position.minScrollExtent);
+        });
+
+        return ListView.builder(
+          controller: messageController,
+          itemCount: snapshot.data!.length,
+          itemBuilder: (context, index) {
+            final messageData = snapshot.data![index];
+            if (messageData.senderId ==
+                FirebaseAuth.instance.currentUser!.uid) {
+              //my message
+              return MyMessageCard(
+                message: messageData.text,
+                date: DateFormat.Hm().format(messageData.timeSent),
+              );
+            }
+            //sender message card
+            return SenderMessageCard(
+              message: messageData.text,
+              date: DateFormat.Hm().format(messageData.timeSent),
+            );
+          },
         );
       },
     );
