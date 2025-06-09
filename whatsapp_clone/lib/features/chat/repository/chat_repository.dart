@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:whatsapp_clone/common/enum/message_enum.dart';
+import 'package:whatsapp_clone/common/repository/common_firebase_storage_repository.dart';
 import 'package:whatsapp_clone/common/utils/utils.dart';
 import 'package:whatsapp_clone/info.dart';
 import 'package:whatsapp_clone/models/chat_contact.dart';
@@ -190,5 +193,66 @@ class ChatRepository {
     } catch (e) {
       showSnackBar(context: context, content: e.toString());
     }
+  }
+
+  void sendFileMessage({
+    required BuildContext context,
+    required File file,
+    required String receiverUserId,
+    required UserModel senderUserData,
+    required Ref ref,
+    required MessageEnum messageEnum,
+  }) async {
+    var timeSent = DateTime.now();
+    var messageId = Uuid().v1();
+
+    String imageUrl = await ref
+        .read(commonFirebaseStorageRepositoryProvider)
+        .storeFileToFirebase(
+          'chat/${messageEnum.type}/${senderUserData.uid}/$receiverUserId/$messageId',
+          file,
+        );
+
+    UserModel receiverUserData;
+    var userDataMap =
+        await firestore.collection('users').doc(receiverUserId).get();
+    receiverUserData = UserModel.fromMap(userDataMap.data()!);
+
+    String contactMsg;
+
+    switch (messageEnum) {
+      case MessageEnum.image:
+        contactMsg = '📷 photo';
+        break;
+      case MessageEnum.video:
+        contactMsg = '📽️ video';
+        break;
+      case MessageEnum.audio:
+        contactMsg = '🎵 audio';
+        break;
+      case MessageEnum.gif:
+        contactMsg = 'GIF';
+        break;
+      default:
+        contactMsg = '';
+    }
+
+    _saveDataTOContactsSubcollection(
+      senderUserData,
+      receiverUserData,
+      contactMsg,
+      timeSent,
+      receiverUserId,
+    );
+
+    _saveMessageToMessageSubCollection(
+      receiverUserId,
+      imageUrl,
+      timeSent,
+      messageId,
+      senderUserData.name,
+      receiverUserData.name,
+      messageEnum,
+    );
   }
 }
