@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 import 'package:whatsapp_clone/common/widgets/loader.dart';
 import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 import 'package:whatsapp_clone/models/message.dart';
-import 'package:whatsapp_clone/widgets/my_message_card.dart';
-import 'package:whatsapp_clone/widgets/sender_message_card.dart';
+import 'package:whatsapp_clone/features/chat/widgets/my_message_card.dart';
+import 'package:whatsapp_clone/features/chat/widgets/sender_message_card.dart';
 
 class ChatList extends ConsumerStatefulWidget {
   final String receiverUserId;
@@ -36,8 +36,8 @@ class _ChatListState extends ConsumerState<ChatList> {
           return const Loader();
         }
 
-        SchedulerBinding.instance.addPersistentFrameCallback((_) {
-          messageController.jumpTo(messageController.position.minScrollExtent);
+        SchedulerBinding.instance.addPostFrameCallback((_) {
+          messageController.jumpTo(messageController.position.maxScrollExtent);
         });
 
         return ListView.builder(
@@ -51,12 +51,14 @@ class _ChatListState extends ConsumerState<ChatList> {
               return MyMessageCard(
                 message: messageData.text,
                 date: DateFormat.Hm().format(messageData.timeSent),
+                type: messageData.type,
               );
             }
             //sender message card
             return SenderMessageCard(
               message: messageData.text,
               date: DateFormat.Hm().format(messageData.timeSent),
+              type: messageData.type,
             );
           },
         );
