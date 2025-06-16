@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:whatsapp_clone/common/enum/message_enum.dart';
+import 'package:whatsapp_clone/common/providers/message_reply_provider.dart';
 import 'package:whatsapp_clone/features/auth/controller/auth_controller.dart';
 import 'package:whatsapp_clone/features/chat/repository/chat_repository.dart';
 import 'package:whatsapp_clone/models/chat_contact.dart';
@@ -32,6 +33,8 @@ class ChatController {
 
   void sendTextMessage(
       BuildContext context, String text, String recieverUserId) {
+    final messageReply = ref.read(messageReplyProvider);
+
     ref
         .read(userDataAuthProvider)
         .whenData((value) => chatRepository.sendTextMessage(
@@ -39,11 +42,16 @@ class ChatController {
               text: text,
               recieverUserId: recieverUserId,
               senderUser: value!,
+              messageReply: messageReply,
             ));
+    // ignore: deprecated_member_use
+    ref.read(messageReplyProvider.state).update((state) => null);
   }
 
   void sendGIFMessage(
       BuildContext context, String gifUrl, String recieverUserId) {
+    final messageReply = ref.read(messageReplyProvider);
+
     ref
         .read(userDataAuthProvider)
         .whenData((value) => chatRepository.sendGIFMessage(
@@ -51,11 +59,20 @@ class ChatController {
               gifUrl: gifUrl,
               recieverUserId: recieverUserId,
               senderUser: value!,
+              messageReply: messageReply,
             ));
+    // ignore: deprecated_member_use
+    ref.read(messageReplyProvider.state).update((state) => null);
   }
 
-  void sendFileMessage(BuildContext context, File file, String receiverUserId,
-      MessageEnum messageEnum) {
+  void sendFileMessage(
+    BuildContext context,
+    File file,
+    String receiverUserId,
+    MessageEnum messageEnum,
+  ) {
+    final messageReply = ref.read(messageReplyProvider);
+
     ref
         .read(userDataAuthProvider)
         .whenData((value) => chatRepository.sendFileMessage(
@@ -65,6 +82,21 @@ class ChatController {
               senderUserData: value!,
               messageEnum: messageEnum,
               ref: ref,
+              messageReply: messageReply,
             ));
+    // ignore: deprecated_member_use
+    ref.read(messageReplyProvider.state).update((state) => null);
+  }
+
+  void setMessageSeen(
+    BuildContext context,
+    String receiverUserId,
+    String messageId,
+  ) {
+    chatRepository.setChatMessageSeen(
+      context,
+      receiverUserId,
+      messageId,
+    );
   }
 }
