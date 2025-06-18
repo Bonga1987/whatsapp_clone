@@ -5,7 +5,12 @@ import 'package:whatsapp_clone/features/chat/controller/chat_controller.dart';
 
 class ButtomChatField extends ConsumerStatefulWidget {
   final String receiverUserId;
-  const ButtomChatField({super.key, required this.receiverUserId});
+  final bool isGroupChat;
+  const ButtomChatField({
+    super.key,
+    required this.receiverUserId,
+    required this.isGroupChat,
+  });
 
   @override
   ConsumerState<ButtomChatField> createState() => _ButtomChatFieldState();
