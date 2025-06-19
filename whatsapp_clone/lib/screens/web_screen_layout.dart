@@ -44,7 +44,10 @@ class WebScreenLayout extends StatelessWidget {
                   const WebChatAppbar(),
                   //chat list
                   const Expanded(
-                    child: ChatList(receiverUserId: ''),
+                    child: ChatList(
+                      receiverUserId: '',
+                      isGroupChat: false,
+                    ),
                   ),
                   //message input box
                   Container(
